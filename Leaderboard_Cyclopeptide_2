@@ -1,0 +1,144 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "BiologySemester2Project.ipynb",
+      "provenance": [],
+      "collapsed_sections": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/keerthn123/Leaderboard_Cyclopeptide/blob/main/Leaderboard_Cyclopeptide_2\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Leaderboard Cyclopeptide Sequencing"
+      ],
+      "metadata": {
+        "id": "7KA3u9MdeK3j"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Wa-0sfrkqxhq",
+        "outputId": "a43cf61a-fe9f-4c14-fdb6-c110592608f5"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "71-103-113-129-71-137-128-113-99-101-99-113\n"
+          ]
+        }
+      ],
+      "source": [
+        "weights_of_aminoacids = [57, 71, 87, 97, 99, 101, 103, 113, 114, 115, 128, 129, 131, 137, 147, 156, 163, 186]\n",
+        "\n",
+        "def cut(Leaderboard,Spectrum,N):\n",
+        "  scores = []\n",
+        "  Answer=[]\n",
+        "  if len(Leaderboard) == 0:\n",
+        "    return Leaderboard\n",
+        "  if(len(Leaderboard)<N):\n",
+        "    return Leaderboard\n",
+        "  for peptide in Leaderboard:\n",
+        "    scores.append(Score(peptide, Spectrum) )\n",
+        "  sortedt = list(sorted(zip(Leaderboard, scores), key=lambda x: x[1], reverse=True))\n",
+        "  val = sortedt[N-1][1]\n",
+        "  for i in range(N):\n",
+        "    Answer.append(sortedt[i][0])\n",
+        "  for j in range(N,len(sortedt)):\n",
+        "    if(val==sortedt[j][1]):\n",
+        "      Answer.append(sortedt[j][0])\n",
+        "  return Answer\n",
+        "\n",
+        "  \n",
+        "def Score(Peptide,Spectrum):\n",
+        "  Theor = Theoretical_Spectrum(Peptide)\n",
+        "  C = [value for value in Spectrum if value in Theor]\n",
+        "  return(len(C))\n",
+        "\n",
+        "\n",
+        "def Theoretical_Spectrum(peptide):\n",
+        "  Spect = []\n",
+        "  Spect.append(0)\n",
+        "  Spect.append(sum(peptide))\n",
+        "  Sum = 0\n",
+        "  length = len(peptide)\n",
+        "  for i in range(length):\n",
+        "    Sum = 0\n",
+        "    for j in range(length-1):\n",
+        "      N = i+j\n",
+        "      if(i+j>=length):\n",
+        "        N = (i+j)-length\n",
+        "      Sum = Sum + peptide[N]\n",
+        "      Spect.append(Sum)\n",
+        "  return sorted(Spect)\n",
+        "\n",
+        "def expand(Leaderboard):\n",
+        "    new_leaderboard = []\n",
+        "    for peptide in Leaderboard:\n",
+        "        for weight in weights_of_aminoacids:   \n",
+        "            new_peptide = peptide[:]\n",
+        "            new_peptide.append(weight)\n",
+        "            new_leaderboard.append(new_peptide)\n",
+        "    Leaderboard = new_leaderboard\n",
+        "    return Leaderboard\n",
+        "\n",
+        "def LeaderboardCyclopeptideSequencing(Spectrum,N):\n",
+        "  Leaderboard = [[]]\n",
+        "  LeaderPeptide =[]# next(iter(Leaderboard))\n",
+        "  while (len(Leaderboard)>0)  :\n",
+        "    Leaderboard = expand(Leaderboard)\n",
+        "    temp_leaderboard = []\n",
+        "    for peptide in Leaderboard:\n",
+        "      if(sum(peptide)==max(Spectrum)):\n",
+        "        if Score(peptide, Spectrum) > Score(LeaderPeptide, Spectrum):\n",
+        "          LeaderPeptide = peptide\n",
+        "      elif sum(peptide) > max(Spectrum):\n",
+        "        continue\n",
+        "      temp_leaderboard.append(peptide)\n",
+        "    Leaderboard = temp_leaderboard\n",
+        "    Leaderboard = cut(Leaderboard, Spectrum, N)\n",
+        "\n",
+        "  return LeaderPeptide\n",
+        "  \n",
+        "file = '/content/rosalind_ba4g (3).txt'\n",
+        "with open(file, mode='r', encoding='utf-8') as f:\n",
+        "  data = f.read()\n",
+        "  data = data.split('\\n')\n",
+        "  N = int(data[0].strip())\n",
+        "  Spectrum = sorted([int(w) for w in data[1].strip().split()])\n",
+        "# Spectrum = [0,99,113,114,128,227,257,229,355,356,370,371,484]\n",
+        "# N = 36\n",
+        "Output = LeaderboardCyclopeptideSequencing(Spectrum,N)\n",
+        "result = '-'.join([str(i) for i in Output])\n",
+        "print(result)"
+      ]
+    }
+  ]
+}
